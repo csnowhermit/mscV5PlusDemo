@@ -56,13 +56,13 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             Log.d(TAG, "SpeechRecognizer init() code = " + code);
 
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, "SpeechRecognizer init() code = " + code, System.currentTimeMillis(), "mInitListener-onInit");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " SpeechRecognizer init() code = " + code, System.currentTimeMillis(), "mInitListener-onInit");
             send2Semantics(msgPacket);
             if (code != ErrorCode.SUCCESS) {
                 Log.e(TAG, "初始化失败，错误码：" + code);
 
                 // 发送到语义端
-                msgPacket = new MsgPacket(daotai_id, "初始化失败，错误码：" + code, System.currentTimeMillis(), "mInitListener-onInit-not-ErrorCode.SUCCESS");
+                msgPacket = new MsgPacket(daotai_id, TAG + " 初始化失败，错误码：" + code, System.currentTimeMillis(), "mInitListener-onInit-not-ErrorCode.SUCCESS");
                 send2Semantics(msgPacket);
             }
         }
@@ -78,7 +78,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             isError = false;
 
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, "onBeginOfSpeech", System.currentTimeMillis(), "onBeginOfSpeech");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " onBeginOfSpeech", System.currentTimeMillis(), "onBeginOfSpeech");
             send2Semantics(msgPacket);
         }
 
@@ -118,13 +118,13 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 System.out.println("听写失败，错误码：" + ret);
 
                 // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, "听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
                 send2Semantics(msgPacket);
             } else {
                 System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
 
                 // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, "开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
                 send2Semantics(msgPacket);
             }
         }
@@ -165,7 +165,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 Log.d(TAG, "session id =" + sid);
 
                 // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, "session id =" + sid, System.currentTimeMillis(), "onEvent");
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " session id =" + sid, System.currentTimeMillis(), "onEvent");
                 send2Semantics(msgPacket);
             }
         }
