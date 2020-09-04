@@ -247,6 +247,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 .penaltyLog().penaltyDeath().build());
 
         SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid="+getString(R.string.app_id));
+//        SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid=5ef7fe15");    // 这里直接写上app_id
         mIat = SpeechRecognizer.createRecognizer(this, mInitListener);
 
         mIat.setParameter(SpeechConstant.CLOUD_GRAMMAR, null);

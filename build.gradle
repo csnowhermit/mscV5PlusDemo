@@ -41,19 +41,17 @@ android {
 
 
 dependencies {
-
     //  compile project(':MscLibSrc')
     compile 'com.android.support:support-v4:26.+'
     api 'com.squareup.leakcanary:leakcanary-android:1.5'
     compile files('libs/Msc.jar')
     //  //debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     //  releaseCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
-//    compile group: 'com.alibaba', name: 'dns-cache-manipulator', version: '1.5.1'
-//    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '1.1.0'
-//    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '1.1.0'
+    //    compile group: 'com.alibaba', name: 'dns-cache-manipulator', version: '1.5.1'
+    //    compile group: 'org.apache.kafka', name: 'kafka_2.11', version: '1.1.0'
+    //    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '1.1.0'
     // https://mvnrepository.com/artifact/com.alibaba/fastjson
-    compile group: 'com.alibaba', name: 'fastjson', version: '1.2.47'
-
+    compile 'com.alibaba:fastjson:1.2.47'
 }
 buildscript {
     repositories {
