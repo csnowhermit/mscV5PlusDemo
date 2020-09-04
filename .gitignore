@@ -23,8 +23,6 @@ nb-configuration.xml
 .gradle/
 build/
 debug/
-gradle/
 libs/
-src/main/assets/
 
 
