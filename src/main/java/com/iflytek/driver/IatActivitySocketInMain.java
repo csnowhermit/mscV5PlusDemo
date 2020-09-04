@@ -41,7 +41,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
     private SpeechRecognizer mIat;    // 无ui对象
     private long freq = 0;    //手动重调的次数
     private static StringBuffer lastResult = new StringBuffer("");
-    private String host = "192.168.120.133";
+    private String host = "192.168.0.27";
     private int port = 50007;
     private Socket socket;    // 子线程中开启，与语义端通信
     private OutputStream outputStream;
@@ -210,6 +210,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 if (this.socket != null) {
                     this.socket.setTcpNoDelay(true);    // 关闭Nagle算法，即不管数据包多小，都要发出去（在交互性高的应用中用）
                     this.outputStream = this.socket.getOutputStream();
+                    System.out.println(host + ":" + port + " have connected");
                     if (this.outputStream != null){
                         break;
                     }
@@ -270,6 +271,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("已连接至语义端");
 
         mIat.startListening(mRecognizerListener);
 //        onClick(null);
