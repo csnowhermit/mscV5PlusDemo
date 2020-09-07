@@ -154,6 +154,13 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onVolumeChanged(int volume, byte[] data) {
             Log.d(TAG, "当前音量大小：" + volume + "，返回音频数据：" + data.length);
             System.out.println(TAG + " 当前音量大小：" + volume + "，返回音频数据：" + data.length);
+
+            StringBuffer sb = new StringBuffer();
+            sb.append(TAG).append(", 当前音量大小：" + volume + "，返回音频数据：" + data.length);
+            // 发送到语义端
+            MsgPacket msgPacket = new MsgPacket(daotai_id, sb.toString(), System.currentTimeMillis(), "onVolumeChanged");
+            send2Semantics(msgPacket);
+            lastResult.delete(0, sb.length());
         }
 
         @Override
@@ -219,7 +226,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println(n * 2 * 1000);
-                Thread.sleep(n * 2 * 1000);
+                Thread.sleep(2 * 1000);
                 n++;
             }
         }
