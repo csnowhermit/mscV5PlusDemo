@@ -188,6 +188,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
             outputStream.flush();
             System.out.println(msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
+            Log.d(TAG, msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
         } catch (SocketException e){    // 报java.net.SocketException: Connection reset错，说明服务端掉线，这时客户端应自动重连
             try {
                 if (outputStream != null){
@@ -265,12 +266,14 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         mIat.setParameter(ResourceUtil.ASR_RES_PATH, getResourcePath());    // 添加本地资源
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
         mIat.setParameter(SpeechConstant.ACCENT, "mandarin");
-        mIat.setParameter(SpeechConstant.VAD_BOS, "4000");
-        mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //原为1000，改为4000原因：避免因乘客说话间停顿
+        mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
+        mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT,"1");
 
         System.out.println(host);
         System.out.println(port);
+        Log.d(TAG, "host = " + host);
+        Log.d(TAG, "port = " + port);
 
         try {
             conn(host, port);
@@ -279,6 +282,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             e.printStackTrace();
         }
         System.out.println("已连接至语义端");
+        Log.d(TAG, "已连接至语义端");
 
         mIat.startListening(mRecognizerListener);
 //        onClick(null);
