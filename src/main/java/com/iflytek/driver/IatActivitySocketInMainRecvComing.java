@@ -31,18 +31,17 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
- * Iat，无ui版
- * 20200604 create
- * Iat识别完之后发送到语义端
+ * 接收到来人感知模块传来的信号时才开始进行语音识别
  */
-public class IatActivitySocketInMain extends Activity implements View.OnClickListener {
+public class IatActivitySocketInMainRecvComing extends Activity implements View.OnClickListener {
     private static String TAG = "driver.IatActivity2Semantics";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private SpeechRecognizer mIat;    // 无ui对象
     private long freq = 0;    //手动重调的次数
     private static StringBuffer lastResult = new StringBuffer("");
-    private String host = "192.168.0.27";
-    private int port = 50007;
+    private String host = "192.168.0.27";    // 语义端socket服务地址
+    private String bindip = "192.168.0.144";    // 语音端socket服务地址
+    private int port = 50007;    // 两个端口都用这个
     private Socket socket;    // 子线程中开启，与语义端通信
     private OutputStream outputStream;
     private boolean isError = false;    // 是否出错，运行到onError()方法视为出错。默认为false，没有出错
@@ -121,26 +120,26 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
-//            try {
-//                Thread.sleep(5000);    // 结束当前识别后不要立马重连
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
-//            freq += 1;
-//            if (ret != ErrorCode.SUCCESS) {
-//                System.out.println("听写失败，错误码：" + ret);
-//
-//                // 发送到语义端
-//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-//                send2Semantics(msgPacket);
-//            } else {
-//                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
-//
-//                // 发送到语义端
-//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-//                send2Semantics(msgPacket);
-//            }
+            try {
+                Thread.sleep(2000);    // 结束当前识别后不要立马重连
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
+            freq += 1;
+            if (ret != ErrorCode.SUCCESS) {
+                System.out.println("听写失败，错误码：" + ret);
+
+                // 发送到语义端
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                send2Semantics(msgPacket);
+            } else {
+                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
+
+                // 发送到语义端
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                send2Semantics(msgPacket);
+            }
         }
 
 
@@ -255,7 +254,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    // 创建安卓端的socket server
+    private void buildServer(String host, int port){
 
     }
 
@@ -271,7 +273,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 .penaltyLog().penaltyDeath().build());
 
 
-        SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid=" + getString(R.string.app_id));
+        SpeechUtility.createUtility(IatActivitySocketInMainRecvComing.this, "appid=" + getString(R.string.app_id));
 //        SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid=5ef7fe15");    // 这里直接写上app_id
         mIat = SpeechRecognizer.createRecognizer(this, mInitListener);
 
@@ -301,7 +303,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         System.out.println("已连接至语义端");
         Log.d(TAG, "已连接至语义端");
 
-        mIat.startListening(mRecognizerListener);
+
+
+
+//        mIat.startListening(mRecognizerListener);
 //        onClick(null);
     }
 
