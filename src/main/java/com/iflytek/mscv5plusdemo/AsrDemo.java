@@ -47,12 +47,12 @@ public class AsrDemo extends Activity implements OnClickListener{
 	private String mLocalLexicon = null;
 	// 云端语法文件
 	private String mCloudGrammar = null;
-	// 本地语法构建路径	
+	// 本地语法构建路径
 	private String grmPath = Environment.getExternalStorageDirectory()
-								.getAbsolutePath() + "/msc/test";
+			.getAbsolutePath() + "/msc/test";
 	// 返回结果格式，支持：xml,json
 	private String mResultType = "json";
-	
+
 	private  final String KEY_GRAMMAR_ABNF_ID = "grammar_abnf_id";
 	private  final String GRAMMAR_TYPE_ABNF = "abnf";
 	private  final String GRAMMAR_TYPE_BNF = "bnf";
@@ -65,9 +65,9 @@ public class AsrDemo extends Activity implements OnClickListener{
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.isrdemo);
 		initLayout();
-		
+
 		// 初始化识别对象
-		mAsr = SpeechRecognizer.createRecognizer(this, mInitListener);		
+		mAsr = SpeechRecognizer.createRecognizer(this, mInitListener);
 		if(mAsr==null){
 			Log.e(TAG,"masr is null");
 		}
@@ -75,24 +75,24 @@ public class AsrDemo extends Activity implements OnClickListener{
 		mLocalLexicon = "张海羊\n刘婧\n王锋\n";
 		mLocalGrammar = FucUtil.readFile(this,"call.bnf", "utf-8");
 		mCloudGrammar = FucUtil.readFile(this,"grammar_sample.abnf","utf-8");
-		
+
 		// 获取联系人，本地更新词典时使用
-		ContactManager mgr = ContactManager.createManager(AsrDemo.this, mContactListener);	
+		ContactManager mgr = ContactManager.createManager(AsrDemo.this, mContactListener);
 		mgr.asyncQueryAllContactsName();
 		mSharedPreferences = getSharedPreferences(getPackageName(),	MODE_PRIVATE);
 
 		mToast = Toast.makeText(this,"",Toast.LENGTH_SHORT);
 	}
-	
+
 	/**
 	 * 初始化Layout。
 	 */
 	private void initLayout(){
 		findViewById(R.id.isr_recognize).setOnClickListener(this);
-		
+
 		findViewById(R.id.isr_grammar).setOnClickListener(this);
 		findViewById(R.id.isr_lexcion).setOnClickListener(this);
-		
+
 		findViewById(R.id.isr_stop).setOnClickListener(this);
 		findViewById(R.id.isr_cancel).setOnClickListener(this);
 
@@ -115,22 +115,22 @@ public class AsrDemo extends Activity implements OnClickListener{
 			}
 		});
 	}
-    
-	
+
+
 	String mContent;// 语法、词典临时变量
-    int ret = 0;// 函数调用返回值
+	int ret = 0;// 函数调用返回值
 	@Override
-	public void onClick(View view) {		
+	public void onClick(View view) {
 		if( null == mAsr ){
 			// 创建单例失败，与 21001 错误为同样原因，参考 http://bbs.xfyun.cn/forum.php?mod=viewthread&tid=9688
 			this.showTip( "创建对象失败，请确认 libmsc.so 放置正确，\n 且有调用 createUtility 进行初始化" );
 			return;
 		}
-		
+
 		if(null == mEngineType) {
 			showTip("请先选择识别引擎类型");
 			return;
-		}	
+		}
 		switch(view.getId())
 		{
 			case R.id.isr_grammar:
@@ -156,20 +156,20 @@ public class AsrDemo extends Activity implements OnClickListener{
 					}
 				}
 				// 在线-构建语法文件，生成语法id
-				else {	
+				else {
 					((EditText)findViewById(R.id.isr_text)).setText(mCloudGrammar);
 					mContent = new String(mCloudGrammar);
 					// 指定引擎类型
 					mAsr.setParameter(SpeechConstant.ENGINE_TYPE, mEngineType);
 					// 设置文本编码格式
 					mAsr.setParameter(SpeechConstant.TEXT_ENCODING,"utf-8");
-				    ret = mAsr.buildGrammar(GRAMMAR_TYPE_ABNF, mContent, grammarListener);
+					ret = mAsr.buildGrammar(GRAMMAR_TYPE_ABNF, mContent, grammarListener);
 					if(ret != ErrorCode.SUCCESS)
 						showTip("语法构建失败,错误码：" + ret+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
 				}
 				break;
 			// 本地-更新词典
-			case R.id.isr_lexcion: 
+			case R.id.isr_lexcion:
 				((EditText)findViewById(R.id.isr_text)).setText(mLocalLexicon);
 				mContent = new String(mLocalLexicon);
 				mAsr.setParameter(SpeechConstant.PARAMS, null);
@@ -198,11 +198,11 @@ public class AsrDemo extends Activity implements OnClickListener{
 					showTip("请先构建语法。");
 					return;
 				};
-				
+
 				ret = mAsr.startListening(mRecognizerListener);
 
 				if (ret != ErrorCode.SUCCESS) {
-					showTip("识别失败,错误码: " + ret+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");	
+					showTip("识别失败,错误码: " + ret+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
 				}
 				break;
 			// 停止识别
@@ -217,24 +217,24 @@ public class AsrDemo extends Activity implements OnClickListener{
 				break;
 		}
 	}
-	
+
 	/**
-     * 初始化监听器。
-     */
-    private InitListener mInitListener = new InitListener() {
+	 * 初始化监听器。
+	 */
+	private InitListener mInitListener = new InitListener() {
 
 		@Override
 		public void onInit(int code) {
 			Log.d(TAG, "SpeechRecognizer init() code = " + code);
 			if (code != ErrorCode.SUCCESS) {
-        		showTip("初始化失败,错误码："+code+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
-        	}
+				showTip("初始化失败,错误码："+code+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
+			}
 		}
-    };
-    	
+	};
+
 	/**
-     * 更新词典监听器。
-     */
+	 * 更新词典监听器。
+	 */
 	private LexiconListener lexiconListener = new LexiconListener() {
 		@Override
 		public void onLexiconUpdated(String lexiconId, SpeechError error) {
@@ -245,10 +245,10 @@ public class AsrDemo extends Activity implements OnClickListener{
 			}
 		}
 	};
-	
+
 	/**
-     * 构建语法监听器。
-     */
+	 * 构建语法监听器。
+	 */
 	private GrammarListener grammarListener = new GrammarListener() {
 		@Override
 		public void onBuildFinish(String grammarId, SpeechError error) {
@@ -262,7 +262,7 @@ public class AsrDemo extends Activity implements OnClickListener{
 				showTip("语法构建成功：" + grammarId);
 			}else{
 				showTip("语法构建失败,错误码：" + error.getErrorCode());
-			}			
+			}
 		}
 	};
 	/**
@@ -273,19 +273,19 @@ public class AsrDemo extends Activity implements OnClickListener{
 		public void onContactQueryFinish(String contactInfos, boolean changeFlag) {
 			//获取联系人
 			mLocalLexicon = contactInfos;
-		}		
+		}
 	};
 	/**
-     * 识别监听器。
-     */
-    private RecognizerListener mRecognizerListener = new RecognizerListener() {
-        
-        @Override
-        public void onVolumeChanged(int volume, byte[] data) {
-        	showTip("当前正在说话，音量大小：" + volume);
-        	Log.d(TAG, "返回音频数据："+data.length);
-        }
-        
+	 * 识别监听器。
+	 */
+	private RecognizerListener mRecognizerListener = new RecognizerListener() {
+
+		@Override
+		public void onVolumeChanged(int volume, byte[] data) {
+			showTip("当前正在说话，音量大小：" + volume);
+			Log.d(TAG, "返回音频数据："+data.length);
+		}
+
 		@Override
 		public void onResult(final RecognizerResult result, boolean isLast) {
 			if (null != result && !TextUtils.isEmpty(result.getResultString())) {
@@ -304,18 +304,18 @@ public class AsrDemo extends Activity implements OnClickListener{
 				Log.d(TAG, "recognizer result : null");
 			}
 		}
-        
-        @Override
-        public void onEndOfSpeech() {
-        	// 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入        	
+
+		@Override
+		public void onEndOfSpeech() {
+			// 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入
 			showTip("结束说话");
-        }
-        
-        @Override
-        public void onBeginOfSpeech() {
-        	// 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入
-        	showTip("开始说话");
-        }
+		}
+
+		@Override
+		public void onBeginOfSpeech() {
+			// 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入
+			showTip("开始说话");
+		}
 
 		@Override
 		public void onError(SpeechError error) {
@@ -332,9 +332,9 @@ public class AsrDemo extends Activity implements OnClickListener{
 			//	}
 		}
 
-    };
-    
-	
+	};
+
+
 
 	private void showTip(final String str) {
 		runOnUiThread(new Runnable() {
@@ -386,13 +386,13 @@ public class AsrDemo extends Activity implements OnClickListener{
 //			mAsr.setParameter(SpeechConstant.SAMPLE_RATE, "8000");
 			result = true;
 		}
-		
+
 		// 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
 		mAsr.setParameter(SpeechConstant.AUDIO_FORMAT,"wav");
 		mAsr.setParameter(SpeechConstant.ASR_AUDIO_PATH, Environment.getExternalStorageDirectory()+"/msc/asr.wav");
 		return result;
 	}
-	
+
 	//获取识别资源路径
 	private String getResourcePath(){
 		StringBuffer tempBuffer = new StringBuffer();
@@ -400,7 +400,7 @@ public class AsrDemo extends Activity implements OnClickListener{
 		tempBuffer.append(ResourceUtil.generateResourcePath(this, RESOURCE_TYPE.assets, "asr/common.jet"));
 		return tempBuffer.toString();
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -410,5 +410,5 @@ public class AsrDemo extends Activity implements OnClickListener{
 			mAsr.destroy();
 		}
 	}
-	
+
 }

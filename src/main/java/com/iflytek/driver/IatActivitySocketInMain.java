@@ -121,26 +121,36 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
-//            try {
-//                Thread.sleep(5000);    // 结束当前识别后不要立马重连
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
-//            freq += 1;
-//            if (ret != ErrorCode.SUCCESS) {
-//                System.out.println("听写失败，错误码：" + ret);
-//
-//                // 发送到语义端
-//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-//                send2Semantics(msgPacket);
-//            } else {
-//                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
-//
-//                // 发送到语义端
-//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-//                send2Semantics(msgPacket);
-//            }
+
+            Log.d(TAG, "onEndOfSpeech：" + lastResult.toString());
+            System.out.println(TAG + " onEndOfSpeech：" + lastResult.toString());    // lastResult能拿到最后的识别结果
+
+            // 发送到语义端
+            MsgPacket msgPacket1 = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onResult");
+            send2Semantics(msgPacket1);
+            lastResult.delete(0, lastResult.length());
+
+
+            try {
+                Thread.sleep(5000);    // 结束当前识别后不要立马重连
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
+            freq += 1;
+            if (ret != ErrorCode.SUCCESS) {
+                System.out.println("听写失败，错误码：" + ret);
+
+                // 发送到语义端
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                send2Semantics(msgPacket);
+            } else {
+                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
+
+                // 发送到语义端
+                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+                send2Semantics(msgPacket);
+            }
         }
 
 

@@ -24,8 +24,12 @@ import com.iflytek.cloud.util.ResourceUtil;
 import com.iflytek.mscv5plusdemo.R;
 import com.iflytek.speech.util.JsonParser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -43,6 +47,7 @@ public class IatActivitySocketInMainRecvComing extends Activity implements View.
     private String bindip = "192.168.0.144";    // 语音端socket服务地址
     private int port = 50007;    // 两个端口都用这个
     private Socket socket;    // 子线程中开启，与语义端通信
+    private ServerSocket serverSocket;    // 安卓端的socket服务
     private OutputStream outputStream;
     private boolean isError = false;    // 是否出错，运行到onError()方法视为出错。默认为false，没有出错
 //    private long n = 0;    // 计数，发送了多少次
@@ -120,26 +125,26 @@ public class IatActivitySocketInMainRecvComing extends Activity implements View.
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
-            try {
-                Thread.sleep(2000);    // 结束当前识别后不要立马重连
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
-            freq += 1;
-            if (ret != ErrorCode.SUCCESS) {
-                System.out.println("听写失败，错误码：" + ret);
-
-                // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-                send2Semantics(msgPacket);
-            } else {
-                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
-
-                // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
-                send2Semantics(msgPacket);
-            }
+//            try {
+//                Thread.sleep(2000);    // 结束当前识别后不要立马重连
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            int ret = mIat.startListening(mRecognizerListener);    // 无ui模式启动
+//            freq += 1;
+//            if (ret != ErrorCode.SUCCESS) {
+//                System.out.println("听写失败，错误码：" + ret);
+//
+//                // 发送到语义端
+//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 听写失败，错误码：" + ret, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+//                send2Semantics(msgPacket);
+//            } else {
+//                System.out.println(TAG + " 开始识别，并设置监听器 " + freq);
+//
+//                // 发送到语义端
+//                MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
+//                send2Semantics(msgPacket);
+//            }
         }
 
 
@@ -256,10 +261,6 @@ public class IatActivitySocketInMainRecvComing extends Activity implements View.
         }
     }
 
-    // 创建安卓端的socket server
-    private void buildServer(String host, int port){
-
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -302,6 +303,33 @@ public class IatActivitySocketInMainRecvComing extends Activity implements View.
         }
         System.out.println("已连接至语义端");
         Log.d(TAG, "已连接至语义端");
+
+        // 启动语音端的socket服务，接受来自来人感知模块的“人来了”信息
+        try {
+            serverSocket = new ServerSocket(port);
+
+            System.out.println("安卓 serversocket 已启动");
+            Log.d(TAG, "安卓 serversocket 已启动");
+
+            Socket client = serverSocket.accept();    // 阻塞在此，等待客户端连接
+
+            BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter socketOut = new PrintWriter(socket.getOutputStream());
+
+            while (true){
+                String line = systemIn.readLine();
+                System.out.println("line:"+ line);
+                if (line.length() > 0){
+                    mIat.startListening(mRecognizerListener);
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
 
 
