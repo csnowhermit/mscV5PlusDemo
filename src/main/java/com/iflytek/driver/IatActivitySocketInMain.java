@@ -85,6 +85,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         @Override
         public void onError(SpeechError error) {
             // 错误码：10118(您没有说话)，可能是录音机权限被禁，需要提示用户打开应用的录音权限。
+            // 错误码：23008（本地引擎错误），离线语音识别最长支持20s，超时则报该错
             Log.d(TAG, error.getPlainDescription(true));
             isError = true;    //true，代表出错了
             lastResult.append(error.getErrorCode() + ", " + error.getErrorDescription());    // 测试阶段，将报错信息也发送到语义端
@@ -101,6 +102,19 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             MsgPacket msgPacket = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
             lastResult.delete(0, lastResult.length());
+
+            // 遇到23008（本地引擎错误）错误，重启mIat
+            if ("23008".equals(error.getErrorCode())){
+                mIat.stopListening();
+                mIat.startListening(mRecognizerListener);
+
+                System.out.println("23008错误，已重启：mIat.startListening(mRecognizerListener)");
+                Log.d(TAG, "23008错误，已重启：mIat.startListening(mRecognizerListener)");
+                lastResult.append("23008错误，已重启：mIat.startListening(mRecognizerListener)");
+                MsgPacket msgPacket1 = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onError");
+                send2Semantics(msgPacket1);
+                lastResult.delete(0, lastResult.length());
+            }
         }
 
         @Override
@@ -108,7 +122,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
             try {
-                Thread.sleep(2000);
+                Thread.sleep(2000);    // 结束当前识别后不要立马重连
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -226,7 +240,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 System.out.println(host + ":" + port + " connected, retry: " + n);
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println(n * 2 * 1000);
+                System.out.println(n);
                 Thread.sleep(2 * 1000);
                 n++;
             }
@@ -263,11 +277,12 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         mIat.setParameter(SpeechConstant.SUBJECT, null);
         mIat.setParameter(SpeechConstant.RESULT_TYPE, "json");
         mIat.setParameter(SpeechConstant.ENGINE_TYPE, "local");
+//        System.out.println("++++getResourcePath():" + getResourcePath());
         mIat.setParameter(ResourceUtil.ASR_RES_PATH, getResourcePath());    // 添加本地资源
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
         mIat.setParameter(SpeechConstant.ACCENT, "mandarin");
         mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
-        mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
+        mIat.setParameter(SpeechConstant.VAD_EOS, "4000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT,"1");
 
         System.out.println(host);
@@ -277,7 +292,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
         try {
             conn(host, port);
-            Thread.sleep(5000);    // 等网络ok了再开始听写
+            Thread.sleep(2000);    // 等网络ok了再开始听写
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -5,16 +5,16 @@ package com.iflytek.driver;
  */
 public class MsgPacket {
     private String daotaiID;    // 导台ID
-    private String message;     // 语音识别结果
+    private String sentences;     // 语音识别结果
     private long timestamp;     // 发送时的时间戳
     private String msgCalled;    // 触发者
 
     public MsgPacket() {
     }
 
-    public MsgPacket(String daotaiID, String message, long timestamp, String msgCalled) {
+    public MsgPacket(String daotaiID, String sentences, long timestamp, String msgCalled) {
         this.daotaiID = daotaiID;
-        this.message = message;
+        this.sentences = sentences;
         this.timestamp = timestamp;
         this.msgCalled = msgCalled;
     }
@@ -27,12 +27,12 @@ public class MsgPacket {
         this.daotaiID = daotaiID;
     }
 
-    public String getMessage() {
-        return message;
+    public String getSentences() {
+        return sentences;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setSentences(String sentences) {
+        this.sentences = sentences;
     }
 
     public long getTimestamp() {
