@@ -40,7 +40,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private SpeechRecognizer mIat;    // 无ui对象
     private long freq = 0;    //手动重调的次数
-    private static StringBuffer lastResult = new StringBuffer("");
+    private static StringBuffer lastResult = new StringBuffer("");    // 识别结果
     private String host = "192.168.0.27";
     private int port = 50007;
     private Socket socket;    // 子线程中开启，与语义端通信
@@ -85,35 +85,38 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         @Override
         public void onError(SpeechError error) {
             // 错误码：10118(您没有说话)，可能是录音机权限被禁，需要提示用户打开应用的录音权限。
-            // 错误码：23008（本地引擎错误），离线语音识别最长支持20s，超时则报该错
+            // 错误码：23008(本地引擎错误)，离线语音识别最长支持20s，超时则报该错
             Log.d(TAG, error.getPlainDescription(true));
             isError = true;    //true，代表出错了
-            lastResult.append(error.getErrorCode() + ", " + error.getErrorDescription());    // 测试阶段，将报错信息也发送到语义端
+            String errorinfo = TAG + ", " + error.getErrorCode() + ", " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
 
             System.out.println("==============================================");
-            if (lastResult.length() == 0) {
-                System.out.println("onError  " + isError + ", lastRestlt: null" + ", length: " + lastResult.length());
+            if (errorinfo.length() == 0) {
+                System.out.println("onError  " + isError + ", errorinfo: null" + ", length: " + errorinfo.length());
             } else {
-                System.out.println("onError  " + isError + ", lastRestlt: " + lastResult + ", length: " + lastResult.length());
+                System.out.println("onError  " + isError + ", errorinfo: " + errorinfo + ", length: " + errorinfo.length());
             }
             System.out.println("==============================================");
 
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onError");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
-            lastResult.delete(0, lastResult.length());
 
             // 遇到23008（本地引擎错误）错误，重启mIat
             if ("23008".equals(String.valueOf(error.getErrorCode()))) {
                 mIat.stopListening();
+                try {
+                    Thread.sleep(5000);    // 报错后延时下再重启监听
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 mIat.startListening(mRecognizerListener);
 
-                System.out.println("23008错误，已重启：mIat.startListening(mRecognizerListener)");
+                errorinfo = TAG + ", 23008错误，已重启：mIat.startListening(mRecognizerListener)";
+                System.out.println(errorinfo);
                 Log.d(TAG, "23008错误，已重启：mIat.startListening(mRecognizerListener)");
-                lastResult.append("23008错误，已重启：mIat.startListening(mRecognizerListener)");
-                MsgPacket msgPacket1 = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onError");
+                MsgPacket msgPacket1 = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
                 send2Semantics(msgPacket1);
-                lastResult.delete(0, lastResult.length());
             }
         }
 
@@ -121,15 +124,6 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
-
-            Log.d(TAG, "onEndOfSpeech：" + lastResult.toString());
-            System.out.println(TAG + " onEndOfSpeech：" + lastResult.toString());    // lastResult能拿到最后的识别结果
-
-            // 发送到语义端
-            MsgPacket msgPacket1 = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onResult");
-            send2Semantics(msgPacket1);
-            lastResult.delete(0, lastResult.length());
-
 
             try {
                 Thread.sleep(5000);    // 结束当前识别后不要立马重连
@@ -160,6 +154,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
             lastResult.append(text);
             System.out.println("当前内容：" + lastResult.toString());
+            System.out.println("isLast: " + isLast);
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++");
 
             if (isLast) {
@@ -177,14 +172,13 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         @Override
         public void onVolumeChanged(int volume, byte[] data) {
             Log.d(TAG, "当前音量大小：" + volume + "，返回音频数据：" + data.length);
-            System.out.println(TAG + " 当前音量大小：" + volume + "，返回音频数据：" + data.length);
 
-            StringBuffer sb = new StringBuffer();
-            sb.append(TAG).append(", 当前音量大小：" + volume + "，返回音频数据：" + data.length);
+            String volumeChangedInfo = String.format("%s, 当前音量大小：%d, 返回音频数据：%d", TAG, volume, data.length);
+            System.out.println(volumeChangedInfo);
+
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, sb.toString(), System.currentTimeMillis(), "onVolumeChanged");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, volumeChangedInfo, System.currentTimeMillis(), "onVolumeChanged");
             send2Semantics(msgPacket);
-            lastResult.delete(0, sb.length());
         }
 
         @Override
@@ -251,8 +245,9 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 System.out.println(host + ":" + port + " connected, retry: " + n);
             } catch (IOException e) {
                 e.printStackTrace();
+                Log.d(TAG, String.valueOf(e));
                 System.out.println(n);
-                Thread.sleep(2 * 1000);
+                Thread.sleep(2 * 1000);    // 掉线自动重连，延时2s
                 n++;
             }
         }
@@ -262,11 +257,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
             outputStream.flush();
             System.out.println(msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
+            Log.d(TAG, msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -282,7 +276,6 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
 
         SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid=" + getString(R.string.app_id));
-//        SpeechUtility.createUtility(IatActivitySocketInMain.this, "appid=5ef7fe15");    // 这里直接写上app_id
         mIat = SpeechRecognizer.createRecognizer(this, mInitListener);
 
         mIat.setParameter(SpeechConstant.CLOUD_GRAMMAR, null);
