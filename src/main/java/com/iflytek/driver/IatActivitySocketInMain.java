@@ -235,7 +235,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             try {
                 this.socket = new Socket(this.host, this.port);
                 if (this.socket != null) {
-                    this.socket.setTcpNoDelay(true);    // 关闭Nagle算法，即不管数据包多小，都要发出去（在交互性高的应用中用）
+                    this.socket.setTcpNoDelay(true);    // 关闭Nagle算法，避免粘包，即不管数据包多小，都要发出去（在交互性高的应用中用）
                     this.outputStream = this.socket.getOutputStream();
                     System.out.println(host + ":" + port + " have connected");
                     if (this.outputStream != null) {
