@@ -104,9 +104,11 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
             // 遇到23008（本地引擎错误）错误，重启mIat
             if ("23008".equals(String.valueOf(error.getErrorCode()))) {
-                mIat.stopListening();
+                if (mIat.isListening()){
+                    mIat.stopListening();
+                }
                 try {
-                    Thread.sleep(5000);    // 报错后延时下再重启监听
+                    Thread.sleep(1000);    // 报错后延时下再重启监听
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -125,8 +127,11 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
 
+            if (mIat.isListening()){
+                mIat.stopListening();
+            }
             try {
-                Thread.sleep(5000);    // 结束当前识别后不要立马重连
+                Thread.sleep(1000);    // 结束当前识别后不要立马重连
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
