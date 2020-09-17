@@ -48,6 +48,9 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
     private boolean isError = false;    // 是否出错，运行到onError()方法视为出错。默认为false，没有出错
 //    private long n = 0;    // 计数，发送了多少次
 
+    private String language = "zh_cn";    //设置输入语言
+    private String accent = "mandarin";    //设置结果返回语言，mandarin为普通话
+
     private Handler socketHandler = null;
 
     private InitListener mInitListener = new InitListener() {
@@ -303,8 +306,8 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         mIat.setParameter(SpeechConstant.ENGINE_TYPE, "local");
 //        System.out.println("++++getResourcePath():" + getResourcePath());
         mIat.setParameter(ResourceUtil.ASR_RES_PATH, getResourcePath());    // 添加本地资源
-        mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
-        mIat.setParameter(SpeechConstant.ACCENT, "mandarin");
+        mIat.setParameter(SpeechConstant.LANGUAGE, language);    //设置输入语言
+        mIat.setParameter(SpeechConstant.ACCENT, accent);    //设置结果返回语言，mandarin为普通话
         mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
         mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT, "1");
