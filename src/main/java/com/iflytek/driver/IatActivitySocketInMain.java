@@ -104,6 +104,9 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
             // 遇到23008（本地引擎错误）错误，重启mIat
             if ("23008".equals(String.valueOf(error.getErrorCode()))) {
+                // 发送到语义端
+                MsgPacket msgPacket3 = new MsgPacket(daotai_id, TAG + " 先别说话呢", System.currentTimeMillis(), "onSpeak");
+                send2Semantics(msgPacket3);
                 if (mIat.isListening()){
                     mIat.stopListening();
                 }
@@ -113,6 +116,9 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                     e.printStackTrace();
                 }
                 mIat.startListening(mRecognizerListener);
+                // 发送到语义端
+                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+                send2Semantics(msgPacket2);
 
                 errorinfo = TAG + ", 23008错误，已重启：mIat.startListening(mRecognizerListener)";
                 System.out.println(errorinfo);
@@ -126,6 +132,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndOfSpeech");
             System.out.println(TAG + " onEndOfSpeech");
+
+            // 发送到语义端
+            MsgPacket msgPacket1 = new MsgPacket(daotai_id, TAG + " 先别说话呢", System.currentTimeMillis(), "onSpeak");
+            send2Semantics(msgPacket1);
 
             if (mIat.isListening()){
                 mIat.stopListening();
@@ -149,6 +159,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 // 发送到语义端
                 MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始识别，并设置监听器" + freq, System.currentTimeMillis(), "onEndOfSpeech-restartListening");
                 send2Semantics(msgPacket);
+
+                // 发送到语义端
+                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+                send2Semantics(msgPacket2);
             }
         }
 
@@ -292,7 +306,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
         mIat.setParameter(SpeechConstant.ACCENT, "mandarin");
         mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
-        mIat.setParameter(SpeechConstant.VAD_EOS, "2000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
+        mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT, "1");
 
         System.out.println(host);
@@ -311,6 +325,10 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 
         mIat.startListening(mRecognizerListener);
 //        onClick(null);
+
+        // 发送到语义端
+        MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+        send2Semantics(msgPacket);
     }
 
     @Override
