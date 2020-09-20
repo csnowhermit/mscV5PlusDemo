@@ -174,21 +174,30 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         public void onResult(RecognizerResult results, boolean isLast) {
             String text = JsonParser.parseIatResult(results.getResultString());
 
-            lastResult.append(text);
+            // 分片，一块一块发送
             System.out.println("当前内容：" + lastResult.toString());
-            System.out.println("isLast: " + isLast);
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("-----------------------------------------------");
+            // 发送到语义端
+            MsgPacket msgPacket = new MsgPacket(daotai_id, text, System.currentTimeMillis(), "onResult");
+            send2Semantics(msgPacket);
 
-            if (isLast) {
-                Log.d(TAG, "说话内容：" + lastResult.toString());
-                System.out.println("===============================================");
-                System.out.println(TAG + " 说话内容：" + lastResult.toString());    // lastResult能拿到最后的识别结果
 
-                // 发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onResult");
-                send2Semantics(msgPacket);
-                lastResult.delete(0, lastResult.length());
-            }
+            // 将完整的一句话拼成一句发送
+//            lastResult.append(text);
+//            System.out.println("当前内容：" + lastResult.toString());
+//            System.out.println("isLast: " + isLast);
+//            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++");
+//
+//            if (isLast) {
+//                Log.d(TAG, "说话内容：" + lastResult.toString());
+//                System.out.println("===============================================");
+//                System.out.println(TAG + " 说话内容：" + lastResult.toString());    // lastResult能拿到最后的识别结果
+//
+//                // 发送到语义端
+//                MsgPacket msgPacket = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onResult");
+//                send2Semantics(msgPacket);
+//                lastResult.delete(0, lastResult.length());
+//            }
         }
 
         @Override
