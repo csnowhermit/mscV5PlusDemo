@@ -108,7 +108,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             // 遇到23008（本地引擎错误）错误，重启mIat
             if ("23008".equals(String.valueOf(error.getErrorCode()))) {
                 // 发送到语义端
-                MsgPacket msgPacket3 = new MsgPacket(daotai_id, TAG + " 先别说话呢", System.currentTimeMillis(), "onSpeak");
+                MsgPacket msgPacket3 = new MsgPacket(daotai_id, TAG + " 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
                 send2Semantics(msgPacket3);
                 if (mIat.isListening()){
                     mIat.stopListening();
@@ -120,7 +120,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 }
                 mIat.startListening(mRecognizerListener);
                 // 发送到语义端
-                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
                 send2Semantics(msgPacket2);
 
                 errorinfo = TAG + ", 23008错误，已重启：mIat.startListening(mRecognizerListener)";
@@ -137,7 +137,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             System.out.println(TAG + " onEndOfSpeech");
 
             // 发送到语义端
-            MsgPacket msgPacket1 = new MsgPacket(daotai_id, TAG + " 先别说话呢", System.currentTimeMillis(), "onSpeak");
+            MsgPacket msgPacket1 = new MsgPacket(daotai_id, TAG + " 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
             send2Semantics(msgPacket1);
 
             if (mIat.isListening()){
@@ -164,7 +164,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
                 send2Semantics(msgPacket);
 
                 // 发送到语义端
-                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+                MsgPacket msgPacket2 = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
                 send2Semantics(msgPacket2);
             }
         }
@@ -330,7 +330,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
 //        onClick(null);
 
         // 发送到语义端
-        MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 可以说话了", System.currentTimeMillis(), "onSpeak");
+        MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
         send2Semantics(msgPacket);
     }
 
