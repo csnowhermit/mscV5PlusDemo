@@ -81,7 +81,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             isError = false;
 
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " onBeginOfSpeech", System.currentTimeMillis(), "onBeginOfSpeech");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
             send2Semantics(msgPacket);
         }
 
