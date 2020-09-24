@@ -175,7 +175,7 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             String text = JsonParser.parseIatResult(results.getResultString());
 
             // 分片，一块一块发送
-            System.out.println("当前内容：" + lastResult.toString());
+            System.out.println("当前内容：" + text);
             System.out.println("-----------------------------------------------");
             // 发送到语义端
             MsgPacket msgPacket = new MsgPacket(daotai_id, text, System.currentTimeMillis(), "onResult");
