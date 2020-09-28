@@ -65,6 +65,9 @@ public class SocketServer extends Activity implements View.OnClickListener {
     public void action(){
         if (!mIat.isListening()) {    // 如果当前没有监听中，则开启监听
             startListening();
+        }else{
+            stopListening();
+            startListening();
         }
     }
 
@@ -209,7 +212,7 @@ public class SocketServer extends Activity implements View.OnClickListener {
             // 发送到语义端
             MsgPacket msgPacket = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
-            if (!"10118".equals(error.getErrorCode())){
+            if (!"10118".equals(String.valueOf(error.getErrorCode()))){
                 stopListening();    // 停止监听
             }
         }
@@ -217,6 +220,12 @@ public class SocketServer extends Activity implements View.OnClickListener {
         @Override
         public void onEndOfSpeech() {
             // 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入
+            Log.d(TAG, "onEndOfSpeech");
+            System.out.println(TAG + "onEndOfSpeech");
+
+            // 发送到语义端
+            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
+            send2Semantics(msgPacket);
             stopListening();
         }
 
