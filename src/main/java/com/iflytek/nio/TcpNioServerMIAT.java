@@ -49,7 +49,7 @@ import java.util.TimerTask;
  * tcp nio服务端：mIat识别对象在主线程中跑
  */
 public class TcpNioServerMIAT extends Activity implements View.OnClickListener {
-    private static String TAG = "nio.TcpNioServer2Semantics";
+    private static String TAG = "nio.TcpNioServerMIAT2Semantics";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private SpeechRecognizer mIat;    // 无ui对象
 

@@ -51,7 +51,7 @@ import java.util.Set;
 public class IatNioSpeech extends Activity implements View.OnClickListener {
     private static final long serialVersionUID = 1L;
 
-    private static String TAG = "nio.TcpNioServer2Semantics";
+    private static String TAG = "nio.IatNioSpeech2Semantics";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private String host = "192.168.0.27";
     private int port = 50007;
@@ -70,10 +70,10 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectDiskReads().detectDiskWrites().detectNetwork()
-                .penaltyLog().build());
+                .penaltyLog().build());    // StrictMode线程策略
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
                 .detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
-                .penaltyLog().penaltyDeath().build());
+                .penaltyLog().penaltyDeath().build());    // StrictMode虚拟机策略
 
 
         SpeechUtility.createUtility(IatNioSpeech.this, "appid=" + getString(R.string.app_id));

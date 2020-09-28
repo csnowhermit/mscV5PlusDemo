@@ -36,7 +36,7 @@ import java.net.UnknownHostException;
  * Iat识别完之后发送到语义端
  */
 public class IatActivitySocketInMain extends Activity implements View.OnClickListener {
-    private static String TAG = "driver.IatActivity2Semantics";
+    private static String TAG = "driver.IatActivitySocketInMain2Semantics";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private SpeechRecognizer mIat;    // 无ui对象
     private long freq = 0;    //手动重调的次数

@@ -34,22 +34,12 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
 
 /**
- * tcp nio服务端
+ * bio socket服务端
  */
 public class SocketServer extends Activity implements View.OnClickListener {
-    private static String TAG = "nio.TcpNioServer2Semantics";
+    private static String TAG = "nio.BIOSocketServer2Semantics";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private SpeechRecognizer mIat;    // 无ui对象
 
