@@ -13,7 +13,7 @@
         tool:ignore="LockedOrientationActivity"
          >
         <activity
-            android:name="com.iflytek.nio.TcpNioServerMIAT"
+            android:name="com.iflytek.nio.IatNioSpeech"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|fontScale"
             android:icon="@drawable/icon"
             android:label="导台-语音识别端"
