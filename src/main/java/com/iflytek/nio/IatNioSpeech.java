@@ -59,9 +59,6 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
     private OutputStream outputStream;    // 网络输出流
 
     private SpeechRecognizer mIat;    // 语音听写对象
-    private Map<String, String> mParamMap = new HashMap<String, String>();
-    private static final String VAL_TRUE = "1";
-
     Handler mainHandler = null;
 
     @Override
@@ -106,7 +103,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                 super.handleMessage(msg);
                 int sign = msg.arg1;
                 if (sign == 1) {
-                    System.out.println(String.format("收到信号 %d，等待开启监听", sign));
+                    System.out.println(String.format("收到信号 %d，开启监听", sign));
                     action();
                 } else {
                     System.out.println(String.format("信号错误：%d", sign));
@@ -207,6 +204,9 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
     public void action() {
         if (!mIat.isListening()) {    // 如果当前没有监听中，则开启监听
+            startListening();
+        }else{
+            stopListening();
             startListening();
         }
     }

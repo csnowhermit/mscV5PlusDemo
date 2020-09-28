@@ -415,7 +415,6 @@ public class TcpNioServerMIAT extends Activity implements View.OnClickListener {
                             CharBuffer charBuffer = charset.decode(readBuffer);    //解码接收到的数据
                             String sign = new String(charBuffer.array()).trim();
                             System.out.println("Server端：接收到客户端的消息：" + sign);
-//                            action();
                             if ("startIAT".equals(sign)){
 //                                action();    // 只有收到信号时才开启监听。监听结束机制：20s限制或后端点检测
                                 IAT = 1;    // 将“开始听写”的状态位置为1

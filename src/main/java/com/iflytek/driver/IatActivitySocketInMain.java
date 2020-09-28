@@ -51,8 +51,6 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
     private String language = "zh_cn";    //设置输入语言
     private String accent = "mandarin";    //设置结果返回语言，mandarin为普通话
 
-    private Handler socketHandler = null;
-
     private InitListener mInitListener = new InitListener() {
         @Override
         public void onInit(int code) {
@@ -181,23 +179,9 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
             MsgPacket msgPacket = new MsgPacket(daotai_id, text, System.currentTimeMillis(), "onResult");
             send2Semantics(msgPacket);
 
-
-            // 将完整的一句话拼成一句发送
-//            lastResult.append(text);
-//            System.out.println("当前内容：" + lastResult.toString());
-//            System.out.println("isLast: " + isLast);
-//            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++");
-//
-//            if (isLast) {
-//                Log.d(TAG, "说话内容：" + lastResult.toString());
-//                System.out.println("===============================================");
-//                System.out.println(TAG + " 说话内容：" + lastResult.toString());    // lastResult能拿到最后的识别结果
-//
-//                // 发送到语义端
-//                MsgPacket msgPacket = new MsgPacket(daotai_id, lastResult.toString(), System.currentTimeMillis(), "onResult");
-//                send2Semantics(msgPacket);
-//                lastResult.delete(0, lastResult.length());
-//            }
+            if (isLast) {
+                // TODO 最后的结果
+            }
         }
 
         @Override
@@ -336,7 +320,6 @@ public class IatActivitySocketInMain extends Activity implements View.OnClickLis
         Log.d(TAG, "已连接至语义端");
 
         mIat.startListening(mRecognizerListener);
-//        onClick(null);
 
         // 发送到语义端
         MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
