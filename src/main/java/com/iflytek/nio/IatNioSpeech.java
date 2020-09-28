@@ -65,12 +65,14 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // StrictMode线程策略
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectDiskReads().detectDiskWrites().detectNetwork()
-                .penaltyLog().build());    // StrictMode线程策略
+                .penaltyLog().build());    // .penaltyLog()，当触发违规条件时，记日志
+        // StrictMode虚拟机策略
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
                 .detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
-                .penaltyLog().penaltyDeath().build());    // StrictMode虚拟机策略
+                .penaltyLog().penaltyDeath().build());
 
 
         SpeechUtility.createUtility(IatNioSpeech.this, "appid=" + getString(R.string.app_id));
@@ -85,7 +87,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");    //设置输入语言
         mIat.setParameter(SpeechConstant.ACCENT, "mandarin");    //设置结果返回语言，mandarin为普通话
         mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
-        mIat.setParameter(SpeechConstant.VAD_EOS, "1000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
+        mIat.setParameter(SpeechConstant.VAD_EOS, "2000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT, "1");
 
         try {
