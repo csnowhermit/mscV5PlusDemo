@@ -78,6 +78,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         SpeechUtility.createUtility(IatNioSpeech.this, "appid=" + getString(R.string.app_id));
         mIat = SpeechRecognizer.createRecognizer(this, mInitListener);
 
+        mIat.setParameter(SpeechConstant.SAMPLE_RATE, "16000");    //设置采样率
         mIat.setParameter(SpeechConstant.CLOUD_GRAMMAR, null);
         mIat.setParameter(SpeechConstant.SUBJECT, null);
         mIat.setParameter(SpeechConstant.RESULT_TYPE, "json");
@@ -90,7 +91,9 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         mIat.setParameter(SpeechConstant.VAD_EOS, "2000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT, "1");
 
-        try {
+//        System.out.println("~~~~SpeechConstant.SAMPLE_RATE:" + SpeechConstant.SAMPLE_RATE + mIat.getParameter(SpeechConstant.SAMPLE_RATE));
+
+      try {
             conn(host, port);
         } catch (InterruptedException e) {
             e.printStackTrace();
