@@ -47,6 +47,7 @@ import java.util.TimerTask;
 
 /**
  * tcp nio服务端：mIat识别对象在主线程中跑
+ * 在主线程中开启tcp监听：收到指令后在主线程中调用mIat对象进行识别（此法不可行）
  */
 public class TcpNioServerMIAT extends Activity implements View.OnClickListener {
     private static String TAG = "nio.TcpNioServerMIAT2Semantics";

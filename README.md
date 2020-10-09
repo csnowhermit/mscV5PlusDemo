@@ -2,7 +2,7 @@
 
 自动循环录循环识别程序入口：com.iflytek.driver.IatActivitySocketInMain
 
-收到信号后启动录程序入口：com.iflytek.nio.IatNioSpeech
+收到信号后启动录程序入口：com.iflytek.nio.IatNioSpeech（主线程跑mIat，子线程开启tcp nio监听接受指令）
 
 ​	信号：startIAT-->开始听写
 

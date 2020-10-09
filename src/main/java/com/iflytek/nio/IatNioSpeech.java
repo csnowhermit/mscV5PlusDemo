@@ -439,7 +439,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                                     msg.arg1 = 2;    // stopIAT对应的信号为2
                                     mainHandler.sendMessage(msg);
                                 } else{
-                                    
+
                                 }
 
                                 readBuffer.rewind();    //重置缓冲区指针位置
