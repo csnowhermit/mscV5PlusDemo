@@ -107,7 +107,11 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                 if (sign == 1) {
                     System.out.println(String.format("收到信号 %d，开启监听", sign));
                     action();
-                } else {
+                } else if (sign == 2){
+                    System.out.println(String.format("收到信号 %d，停止监听", sign));
+                    stopListening();    // 停止监听
+                }
+                else {
                     System.out.println(String.format("信号错误：%d", sign));
                 }
             }
@@ -352,7 +356,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
     }
 
-    // 嵌套子线程，用于
+    // 嵌套子线程，用于接受后端发来的指令：startIAT、stopIAT
     class TcpNioServer extends Thread{
         // 在本地接受后端“开始听写”信号的
         private int listenedPort = 50008;
@@ -430,6 +434,12 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                                     Message msg = Message.obtain();
                                     msg.arg1 = 1;    // startIAT对应的信号为1
                                     mainHandler.sendMessage(msg);
+                                } else if ("stopIAT".equals(sign)){
+                                    Message msg = Message.obtain();
+                                    msg.arg1 = 2;    // stopIAT对应的信号为2
+                                    mainHandler.sendMessage(msg);
+                                } else{
+                                    
                                 }
 
                                 readBuffer.rewind();    //重置缓冲区指针位置

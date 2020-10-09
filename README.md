@@ -4,4 +4,8 @@
 
 收到信号后启动录程序入口：com.iflytek.nio.IatNioSpeech
 
+​	信号：startIAT-->开始听写
+
+​	信号：stopIAT-->停止听写
+
 在Android studio中打开，在本地的目录：D:/workspace/xunfei_offline/mscV5PlusDemo/
