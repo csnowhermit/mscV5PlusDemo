@@ -51,7 +51,7 @@ import java.util.Set;
 public class IatNioSpeech extends Activity implements View.OnClickListener {
     private static final long serialVersionUID = 1L;
 
-    private static String TAG = "nio.IatNioSpeech2Semantics";
+    private static String TAG = "offlineIAT";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
     private String host = "192.168.0.27";
     private int port = 50007;
@@ -88,7 +88,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         mIat.setParameter(SpeechConstant.LANGUAGE, "zh_cn");    //设置输入语言
         mIat.setParameter(SpeechConstant.ACCENT, "mandarin");    //设置结果返回语言，mandarin为普通话
         mIat.setParameter(SpeechConstant.VAD_BOS, "4000");    //前端点检测
-        mIat.setParameter(SpeechConstant.VAD_EOS, "2000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
+        mIat.setParameter(SpeechConstant.VAD_EOS, "4000");    //后端点检测。原为1000，改为4000原因：避免因乘客说话间停顿
         mIat.setParameter(SpeechConstant.ASR_PTT, "1");
 
 //        System.out.println("~~~~SpeechConstant.SAMPLE_RATE:" + SpeechConstant.SAMPLE_RATE + mIat.getParameter(SpeechConstant.SAMPLE_RATE));
@@ -99,9 +99,10 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             e.printStackTrace();
         }
         System.out.println("已连接至语义端");
-        Thread thread = new Thread(new TcpNioServer());
 
+        Thread thread = new Thread(new TcpNioServer());
         thread.start();    // 打开子线程
+
         mainHandler = new Handler(){    // 接受子线程发来的消息，并进行处理
             @Override
             public void handleMessage(Message msg) {
@@ -260,7 +261,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             // 错误码：23008(本地引擎错误)，离线语音识别最长支持20s，超时则报该错
 
             Log.d(TAG, error.getPlainDescription(true));
-            String errorinfo = TAG + ", " + error.getErrorCode() + ", " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
+            String errorinfo = TAG + " " + error.getErrorCode() + " " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
 
             System.out.println("==============================================");
             System.out.println("onError , errorinfo: " + errorinfo + ", length: " + errorinfo.length());
@@ -269,6 +270,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             // 发送到语义端
             MsgPacket msgPacket = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
+
             if (!"10118".equals(String.valueOf(error.getErrorCode()))){
                 stopListening();    // 停止监听
             }
