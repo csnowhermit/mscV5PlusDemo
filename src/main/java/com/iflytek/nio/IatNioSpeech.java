@@ -93,12 +93,12 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
 //        System.out.println("~~~~SpeechConstant.SAMPLE_RATE:" + SpeechConstant.SAMPLE_RATE + mIat.getParameter(SpeechConstant.SAMPLE_RATE));
 
-      try {
-            conn(host, port);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("已连接至语义端");
+//        try {
+//            conn(host, port);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("已连接至语义端");
 
         Thread thread = new Thread(new TcpNioServer());
         thread.start();    // 打开子线程
@@ -176,6 +176,27 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         }
     }
 
+    // 关闭连接
+    public void closeConn(){
+        try {
+//            // 发送到语义端
+//            String msg = "客户端已主动断开连接";
+//            MsgPacket msgPacket = new MsgPacket(daotai_id, msg, System.currentTimeMillis(), "onCloseConn");
+//            outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
+//            outputStream.flush();
+
+            if (this.outputStream != null) {
+                this.outputStream.close();
+            }
+            if (this.socket != null){
+                this.socket.close();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 发送到语义端
      *
@@ -183,31 +204,37 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
      */
     public void send2Semantics(MsgPacket msgPacket) {
         try {
+            conn(host, port);
+
             outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
             outputStream.flush();
             System.out.println(String.format("%s %s %s", msgPacket.getMsgCalled(), System.currentTimeMillis(), JSON.toJSONString(msgPacket)));
+
+            closeConn();
         } catch (SocketException e) {    // 报java.net.SocketException: Connection reset错，说明服务端掉线，这时客户端应自动重连
-            try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-                if (socket != null) {
-                    socket.close();
-                }
-                conn(host, port);
-
-//                // 重连后
-//                outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
-//                outputStream.flush();
-//                System.out.println(msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
-//                Log.d(TAG, msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
-
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+//            try {
+//                if (outputStream != null) {
+//                    outputStream.close();
+//                }
+//                if (socket != null) {
+//                    socket.close();
+//                }
+//                conn(host, port);
+//
+////                // 重连后
+////                outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
+////                outputStream.flush();
+////                System.out.println(msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
+////                Log.d(TAG, msgPacket.getMsgCalled() + System.currentTimeMillis() + JSON.toJSONString(msgPacket));
+//
+//            } catch (InterruptedException ex) {
+//                ex.printStackTrace();
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//            }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -270,7 +297,6 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             // 发送到语义端
             MsgPacket msgPacket = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
-
             if (!"10118".equals(String.valueOf(error.getErrorCode()))){
                 stopListening();    // 停止监听
             }
@@ -310,9 +336,9 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             String volumeChangedInfo = String.format("%s, 当前音量大小：%d, 返回音频数据：%d", TAG, volume, data.length);
             System.out.println(volumeChangedInfo);
 
-            // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, volumeChangedInfo, System.currentTimeMillis(), "onVolumeChanged");
-            send2Semantics(msgPacket);
+//            // 发送到语义端
+//            MsgPacket msgPacket = new MsgPacket(daotai_id, volumeChangedInfo, System.currentTimeMillis(), "onVolumeChanged");
+//            send2Semantics(msgPacket);
         }
 
         @Override
