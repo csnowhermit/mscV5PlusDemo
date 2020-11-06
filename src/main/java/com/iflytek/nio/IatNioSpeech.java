@@ -18,7 +18,6 @@ import com.iflytek.cloud.RecognizerListener;
 import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
-import com.iflytek.cloud.SpeechEvent;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.ResourceUtil;
@@ -38,9 +37,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -53,10 +52,11 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
     private static String TAG = "offlineIAT";
     private static String daotai_id = "center01";    //导台ID，标识不同朝向的
-    private String host = "192.168.0.27";
+    private String host = "192.168.0.57";
     private int port = 50007;
     private Socket socket;    //与语义端通信
     private OutputStream outputStream;    // 网络输出流
+    private StringBuffer sb = new StringBuffer("");    //累加临每片段的识别结果
 
     private SpeechRecognizer mIat;    // 语音听写对象
     Handler mainHandler = null;
@@ -113,7 +113,8 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                     action();
                 } else if (sign == 2){
                     System.out.println(String.format("收到信号 %d，停止监听", sign));
-                    stopListening();    // 停止监听
+//                    stopListening();    // 停止监听
+                    stopListening_iatcmd();    //收到信号强制停止监听用这个
                 }
                 else {
                     System.out.println(String.format("信号错误：%d", sign));
@@ -152,12 +153,12 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
                 if (this.socket != null) {
                     this.socket.setTcpNoDelay(true);    // 关闭Nagle算法，避免粘包，即不管数据包多小，都要发出去（在交互性高的应用中用）
                     this.outputStream = this.socket.getOutputStream();
-                    System.out.println(host + ":" + port + " have connected");
+//                    System.out.println(host + ":" + port + " have connected");
                     if (this.outputStream != null) {
                         break;
                     }
                 }
-                System.out.println(host + ":" + port + " connected, retry: " + n);
+//                System.out.println(host + ":" + port + " connected, retry: " + n);
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println(n);
@@ -170,7 +171,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             MsgPacket msgPacket = new MsgPacket(daotai_id, socket.toString(), System.currentTimeMillis(), "conn");
             outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
             outputStream.flush();
-            System.out.println(String.format("%s %s %s", msgPacket.getMsgCalled(), System.currentTimeMillis(), JSON.toJSONString(msgPacket)));
+//            System.out.println(String.format("%s %s %s", msgPacket.getMsgCalled(), System.currentTimeMillis(), JSON.toJSONString(msgPacket)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -208,7 +209,7 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
             outputStream.write(JSON.toJSONString(msgPacket).getBytes("utf-8"));
             outputStream.flush();
-            System.out.println(String.format("%s %s %s", msgPacket.getMsgCalled(), System.currentTimeMillis(), JSON.toJSONString(msgPacket)));
+//            System.out.println(String.format("%s %s %s", msgPacket.getMsgCalled(), System.currentTimeMillis(), JSON.toJSONString(msgPacket)));
 
             closeConn();
         } catch (SocketException e) {    // 报java.net.SocketException: Connection reset错，说明服务端掉线，这时客户端应自动重连
@@ -243,26 +244,43 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         if (!mIat.isListening()) {    // 如果当前没有监听中，则开启监听
             startListening();
         }else{
-            stopListening();
+            stopListening_iatcmd();    // 收到信号强制停止监听用这个
             startListening();
         }
     }
 
     // 开启监听
     public void startListening(){
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        String formatStr =formatter.format(new Date());
         mIat.startListening(mRecognizerListener);
-        System.out.println("================== 开始听写 ==================");
+        System.out.println("3、" + formatStr + " ================== 开始听写 ==================");
         // 通过socket发送到语义端
         MsgPacket msgPacket = new MsgPacket(daotai_id, "开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
         send2Semantics(msgPacket);
     }
 
-    // 停止监听
-    public void stopListening(){
+    // 停止监听：后端点停止监听
+    public void stopListening_eos(){
         if (mIat.isListening()) {
             mIat.stopListening();
         }
-        System.out.println("================== 停止听写 ==================");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        String formatStr =formatter.format(new Date());
+        System.out.println("6、" + formatStr + " 后端点 ================== 停止听写 ==================");
+        // 通过socket发送到语义端
+        MsgPacket msgPacket = new MsgPacket(daotai_id, "停止听写", System.currentTimeMillis(), "onEndOfSpeech");
+        send2Semantics(msgPacket);
+    }
+
+    // 停止监听：正在监听中收到开始指令，先停止再启动（或：接收到中断指令后强制中断）
+    public void stopListening_iatcmd(){
+        if (mIat.isListening()) {
+            mIat.stopListening();
+        }
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        String formatStr =formatter.format(new Date());
+        System.out.println("6、" + formatStr + " 指令强制 ================== 停止听写 ==================");
         // 通过socket发送到语义端
         MsgPacket msgPacket = new MsgPacket(daotai_id, "停止听写", System.currentTimeMillis(), "onEndOfSpeech");
         send2Semantics(msgPacket);
@@ -274,12 +292,15 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
         @Override
         public void onBeginOfSpeech() {
             // 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入
-            Log.d(TAG, "onBeginOfSpeech");
-            System.out.println(TAG + "onBeginOfSpeech");
+//            Log.d(TAG, "onBeginOfSpeech");
+//            System.out.println(TAG + "onBeginOfSpeech");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+            String formatStr =formatter.format(new Date());
+            System.out.println("4、" + formatStr+ " 听写中");
 
-            // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
-            send2Semantics(msgPacket);
+//            // 发送到语义端
+//            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 开始听写", System.currentTimeMillis(), "onBeginOfSpeech");
+//            send2Semantics(msgPacket);
         }
 
         @Override
@@ -287,31 +308,25 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             // 错误码：10118(您没有说话)，可能是录音机权限被禁，需要提示用户打开应用的录音权限。
             // 错误码：23008(本地引擎错误)，离线语音识别最长支持20s，超时则报该错
 
-            Log.d(TAG, error.getPlainDescription(true));
-            String errorinfo = TAG + " " + error.getErrorCode() + " " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
+//            Log.d(TAG, error.getPlainDescription(true));
+//            String errorinfo = TAG + " " + error.getErrorCode() + " " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
 
-            System.out.println("==============================================");
-            System.out.println("onError , errorinfo: " + errorinfo + ", length: " + errorinfo.length());
-            System.out.println("==============================================");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+            String formatStr =formatter.format(new Date());
+            System.out.println("5、" + formatStr + " onError code: " + error.getErrorCode());
 
+            String sentences = TAG + " " + error.getErrorCode() + " " + error.getErrorDescription();    // 测试阶段，将报错信息也发送到语义端
             // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, errorinfo, System.currentTimeMillis(), "onError");
+            MsgPacket msgPacket = new MsgPacket(daotai_id, sentences, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
             if (!"10118".equals(String.valueOf(error.getErrorCode()))){
-                stopListening();    // 停止监听
+                stopListening_eos();    // 停止监听
             }
         }
 
         @Override
         public void onEndOfSpeech() {
-            // 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入
-            Log.d(TAG, "onEndOfSpeech");
-            System.out.println(TAG + "onEndOfSpeech");
-
-            // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, TAG + " 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
-            send2Semantics(msgPacket);
-            stopListening();
+            stopListening_eos();
         }
 
         @Override
@@ -319,15 +334,17 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             String json = results.getResultString();
             String text = JsonParser.parseIatResult(json);    // 当前分片识别结果，非json
 
-            // 分片，一块一块发送
-            System.out.println("当前内容：" + text);
-            System.out.println("-----------------------------------------------");
-            // 发送到语义端
-            MsgPacket msgPacket = new MsgPacket(daotai_id, text, System.currentTimeMillis(), "onResult");
-            send2Semantics(msgPacket);
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+            String formatStr =formatter.format(new Date());
+            System.out.println("\t" + formatStr + " 最新识别结果：" + text);
+            sb.append(text);
 
             if (isLast) {
-                //TODO 最后的结果
+                System.out.println("5、" + formatStr + " 完整识别结果：" + sb.toString());
+                // 通过socket发送到语义端
+                MsgPacket msgPacket = new MsgPacket(daotai_id, sb.toString(), System.currentTimeMillis(), "onResult");
+                send2Semantics(msgPacket);
+                sb.delete(0, sb.toString().length());
             }
         }
 
@@ -343,24 +360,24 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
         @Override
         public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
-            // 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
-            // 若使用本地能力，会话id为null
-            Log.d(TAG, "onEvent enter");
-            //以下代码用于调试，如果出现问题可以将sid提供给讯飞开发者，用于问题定位排查
-            if (eventType == SpeechEvent.EVENT_SESSION_ID) {
-                String sid = obj.getString(SpeechEvent.KEY_EVENT_AUDIO_URL);
-                Log.d(TAG, "sid==" + sid);
-            } else if (eventType == SpeechEvent.EVENT_SESSION_END) {
-                Log.d(TAG, "SpeechEvent.EVENT_SESSION_END: " + SpeechEvent.EVENT_SESSION_END);
-                if (mIat.isListening()) {
-                    mIat.stopListening();
-                }
-                System.out.println("================== onEvent SpeechEvent.EVENT_SESSION_END 停止听写 ==================");
-                // 通过socket发送到语义端
-                MsgPacket msgPacket = new MsgPacket(daotai_id, "SpeechEvent.EVENT_SESSION_END 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
-                send2Semantics(msgPacket);
-//                closeConn();    // 停止听写后关闭连接
-            }
+//            // 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
+//            // 若使用本地能力，会话id为null
+//            Log.d(TAG, "onEvent enter");
+//            //以下代码用于调试，如果出现问题可以将sid提供给讯飞开发者，用于问题定位排查
+//            if (eventType == SpeechEvent.EVENT_SESSION_ID) {
+//                String sid = obj.getString(SpeechEvent.KEY_EVENT_AUDIO_URL);
+//                Log.d(TAG, "sid==" + sid);
+//            } else if (eventType == SpeechEvent.EVENT_SESSION_END) {
+//                Log.d(TAG, "SpeechEvent.EVENT_SESSION_END: " + SpeechEvent.EVENT_SESSION_END);
+//                if (mIat.isListening()) {
+//                    mIat.stopListening();
+//                }
+//                System.out.println("================== onEvent SpeechEvent.EVENT_SESSION_END 停止听写 ==================");
+//                // 通过socket发送到语义端
+//                MsgPacket msgPacket = new MsgPacket(daotai_id, "SpeechEvent.EVENT_SESSION_END 停止听写", System.currentTimeMillis(), "onEndOfSpeech");
+//                send2Semantics(msgPacket);
+////                closeConn();    // 停止听写后关闭连接
+//            }
         }
     };
 
@@ -443,7 +460,9 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
                                 int interestOps = SelectionKey.OP_READ;    //对读事件感兴趣
                                 socketChannel.register(selector, interestOps, new Buffers(256, 256));
-                                System.out.println("Server端：accept from: " + socketChannel.getRemoteAddress());
+                                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+                                String formatStr =formatter.format(new Date());
+                                System.out.println("1、" + formatStr + " Server端：accept from: " + socketChannel.getRemoteAddress());
                             }
 
                             //处理可读消息
@@ -460,7 +479,9 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
 
                                 CharBuffer charBuffer = charset.decode(readBuffer);    //解码接收到的数据
                                 String sign = new String(charBuffer.array()).trim();
-                                System.out.println("Server端：接收到客户端的消息：" + sign);
+                                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+                                String formatStr =formatter.format(new Date());
+                                System.out.println("2、" + formatStr + " Server端：接收到客户端的消息：" + sign);
                                 if ("startIAT".equals(sign)){
                                     Message msg = Message.obtain();
                                     msg.arg1 = 1;    // startIAT对应的信号为1
