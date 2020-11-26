@@ -319,8 +319,22 @@ public class IatNioSpeech extends Activity implements View.OnClickListener {
             // 发送到语义端
             MsgPacket msgPacket = new MsgPacket(daotai_id, sentences, System.currentTimeMillis(), "onError");
             send2Semantics(msgPacket);
-            if (!"10118".equals(String.valueOf(error.getErrorCode()))){
+            if (!"10118".equals(String.valueOf(error.getErrorCode()))){    // 如果不是10118错误，则重新开始监听
                 stopListening_eos();    // 停止监听
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                startListening();
+            }else{
+                stopListening_eos();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                startListening();
             }
         }
 
